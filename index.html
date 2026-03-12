@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SJC CS ATTANDANCE</title>
+
+<!-- Excel Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+}
+
+/* LOGIN STYLE */
+#loginPage{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:left;
+background:#eee;
+}
+
+.loginBox{
+width:900px;
+max-width:95%;
+display:flex;
+border-radius:20px;
+overflow:hidden;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+.loginLeft{
+    width:50%;
+    background: url('SJC LOGO 1.png') center/cover no-repeat;
+    background-size: 100%;
+}
+
+.loginRight{
+width:50%;
+background:#9b0000;
+color:rgb(255, 255, 255);
+padding:40px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.loginRight input{
+padding:10px;
+margin-top:15px;
+border-radius:6px;
+border:none;
+}
+
+.loginRight button{
+margin-top:15px;
+padding:10px;
+border:none;
+border-radius:6px;
+background:gold;
+font-weight:bold;
+cursor:pointer;
+}
+
+#errorMsg{
+color:yellow;
+margin-top:10px;
+}
+
+/* ATTENDANCE ORIGINAL STYLE */
+#attendancePage{
+display:none;
+}
+
+#attendancePage body{
+    margin:0;
+    font-family:Arial;
+}
+
+#attendancePage header{text-align:center;padding:15px;background:rgba(0,0,0,0.3);}
+.controls{display:flex;justify-content:center;align-items:center;gap:15px;margin:20px;flex-wrap:wrap;}
+label{font-weight:bold;}
+select,input{padding:8px;border-radius:5px;border:none;}
+.classSelect{padding:8px;border-radius:5px;border:none;background:white;font-weight:bold;cursor:pointer;}
+.dashboard{max-width:1100px;margin:20px auto;background:rgb(255, 255, 255);color:rgb(0, 0, 0);padding:20px;border-radius:8px;overflow-x:auto;}
+/* ===== COLUMN SIZE CONTROL ===== */
+.grid-table{
+    width:auto;              /* prevent stretching */
+    border-collapse:collapse;
+    table-layout:fixed;      /* important for equal width */
+    margin:auto;
+}
+
+.grid-table th,
+.grid-table td{
+    border:1px solid #ccc;
+    padding:4px;
+    text-align:center;
+    width:70px;   /* 👈 THIS IS THE SIZE CONTROL */
+}
+.grid-table th,.grid-table td{border:1px solid #ccc;padding:6px;text-align:center;}
+.box{cursor:pointer;font-weight:bold;}
+.present{color:green;}
+.absent{color:red;}
+.locked{background:#ddd;pointer-events:none;}
+.summaryBtn{display:block;width:90px;margin:5px auto;padding:6px;border-radius:8px;color:white;font-weight:bold;cursor:pointer;}
+.grey{background:#6c757d;}
+.blue{background:#0275d8;}
+.purple{background:#6f42c1;}
+.greenBtn{background:#28a745;}
+.absBox{border:1px solid #999;min-height:60px;max-height:100px;overflow-y:auto;font-size:12px;margin-top:4px;padding:3px;background:#f8f9fa;}
+.finalSubmit{background:rgb(255, 255, 0);padding:8px 20px;font-weight:bold;border:none;border-radius:6px;cursor:pointer;}
+#successBox{display:none;text-align:center;margin-top:10px;}
+#coin{font-size:40px;display:inline-block;transition: transform 1s ease;}
+.spin{animation: spin 1s linear;}
+@keyframes spin{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
+
+body.attendanceMode{
+background:linear-gradient(to right,#210f27,#412043,#642c60);
+color:white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+<div class="loginBox">
+<div class="loginLeft"></div>
+
+<div class="loginRight">
+<h2>St. Joseph's College (Autonomous)</h2>
+<p>Student Login</p>
+
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+<div id="errorMsg"></div>
+</div>
+</div>
+</div>
+
+<!-- ATTENDANCE PAGE (UNCHANGED STRUCTURE) -->
+<div id="attendancePage">
+
+<header>
+<h2>St. Joseph's College (Autonomous)</h2>
+<h3>Department of Computer Science</h3>
+</header>
+
+<div class="controls">
+<label>Date:</label>
+<input type="date" id="attendanceDate">
+
+<label>CLASS:</label>
+<select id="classSelect" class="classSelect" onchange="classChanged()">
+<option value="A">I BSC CS 'A'</option>
+<option value="B">I BSC CS 'B'</option>
+<option value="C">I BSC CS 'C'</option>
+<option value="D">I BSC CS 'D'</option>
+</select>
+
+<select id="dayOrder" onchange="updateDayOrder()">
+<option value="">Choose Day Order</option>
+<option value="A">A Day</option>
+<option value="B">B Day</option>
+<option value="C">C Day</option>
+<option value="D">D Day</option>
+<option value="E">E Day</option>
+<option value="F">F Day</option>
+</select>
+
+<button class="finalSubmit" onclick="finalSubmit()">FINAL SUBMIT</button>
+</div>
+
+<div id="successBox">
+<span id="coin">🪙</span>
+<div><b>SUBMITTED SUCCESSFULLY</b></div>
+</div>
+
+<div class="dashboard">
+<table class="grid-table">
+<thead>
+<tr>
+<th>D.No.</th>
+<th id="h1">H1</th>
+<th id="h2">H2</th>
+<th id="h3">H3</th>
+<th id="h4">H4</th>
+<th id="h5">H5</th>
+</tr>
+</thead>
+<tbody id="attendanceGrid"></tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+
+/* LOGIN SYSTEM */
+const users={
+"123":"123",
+"123":"123",
+"123'":"123",
+"123'":"123"
+};
+
+function login(){
+let u=document.getElementById("username").value.trim();
+let p=document.getElementById("password").value.trim();
+
+if(users[u] && users[u]===p){
+document.getElementById("loginPage").style.display="none";
+document.getElementById("attendancePage").style.display="block";
+document.body.classList.add("attendanceMode");
+}else{
+document.getElementById("errorMsg").innerText="Invalid Username or Password";
+}
+}
+
+/* ===== ATTENDANCE SCRIPT (UNCHANGED) ===== */
+
+const classStudents = {
+"A": { start: 501, end: 565 },
+"B": { start: 601, end: 662 },
+"C": { start: 701, end: 760 },
+"D": { start: 801, end: 860 }
+};
+
+let students=[];
+let selectedClass="A";
+let tempData={}, originalData={}, lockedColumns={}, colState={};
+
+function generateStudents(){
+students=[];
+let range=classStudents[selectedClass];
+let removedNumbers = [507, 508, 522, 561];
+for(let i=range.start;i<=range.end;i++){
+if(selectedClass==="A" && removedNumbers.includes(i)){
+continue;
+}
+
+students.push("25UCS"+i);
+}
+}
+
+function generateGrid(){
+attendanceGrid.innerHTML="";
+tempData={}; originalData={}; lockedColumns={}; colState={};
+
+students.forEach(student=>{
+let row="<tr><td>"+student+"</td>";
+tempData[student]=["P","P","P","P","P"];
+originalData[student]=["P","P","P","P","P"];
+for(let i=0;i<5;i++){
+row+=`<td class="box present" data-col="${i}" onclick="toggleAttendance('${student}',${i},this)">P</td>`;
+}
+row+="</tr>";
+attendanceGrid.innerHTML+=row;
+});
+
+let summaryRow="<tr><td><b>Summary</b></td>";
+for(let i=0;i<5;i++){
+lockedColumns[i]=false;
+colState[i]={free:false,eng:false};
+summaryRow+=`
+<td>
+<div>Abs (<span id="absCount${i}">0</span>)</div>
+<div id="absList${i}" class="absBox"></div>
+<div class="summaryBtn grey" onclick="toggleFree(${i})">Free</div>
+<div class="summaryBtn purple" onclick="toggleENG(${i})">ENG</div>
+<div class="summaryBtn greenBtn" onclick="lockColumn(${i})">Submit</div>
+<div class="summaryBtn blue" onclick="unlockColumn(${i})">Edit</div>
+</td>`;
+}
+summaryRow+="</tr>";
+attendanceGrid.innerHTML+=summaryRow;
+}
+
+function updateDayOrder(){
+let day=document.getElementById("dayOrder").value;
+for(let i=1;i<=5;i++){
+document.getElementById("h"+i).innerText="H"+i;
+}
+
+if(selectedClass==="A"){
+if(day==="A") setHeaders("DSA","HE","TAM","ENG","MAT");
+if(day==="B") setHeaders("LAB (SCC)","LAB (SCC)","LAB (SCC)","TAM","ENG");
+if(day==="C") setHeaders("ENG","PYT","MAT","PYT","DSA");
+if(day==="D") setHeaders("MAT","TAM","EVS","MAT","DSA");
+if(day==="E") setHeaders("PYT","DSA","MAT","TAM","ENG");
+if(day==="F") setHeaders("PYT","HE","EVS","ENG","MAT");
+}
+
+if(selectedClass==="B"){
+if(day==="A") setHeaders("PYT","HE","TAM","ENG","MAT");
+if(day==="B") setHeaders("DSA","MAT","PYT","TAM","ENG");
+if(day==="C") setHeaders("ENG","DSA","PYT","MAT","DSA");
+if(day==="D") setHeaders("DSA","MAT","EVS","MAT","PYT");
+if(day==="E") setHeaders("LAB (JCICT)","LAB (JCICT)","LAB (JCICT)","TAM","ENG");
+if(day==="F") setHeaders("TAM","HE","MAT","ENG","EVS");
+}
+
+if(selectedClass==="C"){
+if(day==="A") setHeaders("DSA","HE","PYT","ENG","MAT");
+if(day==="B") setHeaders("LAB (JCICT)","LAB (JCICT)","LAB (JCICT)","TAM","ENG")
+if(day==="C") setHeaders("ENG","TAM","PYT","DSA","MAT");
+if(day==="D") setHeaders("MAT","DSA","EVS","MAT","PYT");
+if(day==="E") setHeaders("PYT","MAT","DSA","TAM","ENG");
+if(day==="F") setHeaders("TAM","HE","MAT","ENG","EVS");
+}
+
+if(selectedClass==="D"){
+if(day==="A") setHeaders("PYT","HE","TAM","ENG","MAT");
+if(day==="B") setHeaders("LAB (ECC)","LAB (ECC)","LAB (ECC)","DSA","ENG");
+if(day==="C") setHeaders("ENG","TAM","DSA","DSA","MAT");
+if(day==="D") setHeaders("PYT","MAT","EVS","TAM","MAT");
+if(day==="E") setHeaders("DSA","MAT","PYT","TAM","ENG");
+if(day==="F") setHeaders("PYT","HE","MAT","ENG","EVS");
+}
+}
+
+function setHeaders(h1,h2,h3,h4,h5){
+h1El.innerText="H1 - "+h1;
+h2El.innerText="H2 - "+h2;
+h3El.innerText="H3 - "+h3;
+h4El.innerText="H4 - "+h4;
+h5El.innerText="H5 - "+h5;
+}
+
+const h1El=document.getElementById("h1");
+const h2El=document.getElementById("h2");
+const h3El=document.getElementById("h3");
+const h4El=document.getElementById("h4");
+const h5El=document.getElementById("h5");
+
+function toggleAttendance(student,index,cell){
+if(lockedColumns[index]) return;
+if(cell.innerText==="P"){
+cell.innerText="A";
+cell.className="box absent";
+tempData[student][index]="A";
+}else{
+cell.innerText="P";
+cell.className="box present";
+tempData[student][index]="P";
+}
+updateAbsList(index);
+}
+
+function updateAbsList(col){
+let absList=document.getElementById("absList"+col);
+let absCount=document.getElementById("absCount"+col);
+absList.innerHTML="";
+let count=0;
+students.forEach(student=>{
+if(tempData[student][col]==="A"){
+count++;
+absList.innerHTML+=student+"<br>";
+}
+});
+absCount.innerText=count;
+}
+
+function toggleFree(col){
+colState[col].free=!colState[col].free;
+let cells=document.querySelectorAll(`td[data-col='${col}']`);
+cells.forEach(cell=>{
+cell.innerText=colState[col].free?"-":"P";
+});
+updateAbsList(col);
+}
+
+function toggleENG(col){
+colState[col].eng=!colState[col].eng;
+let cells=document.querySelectorAll(`td[data-col='${col}']`);
+cells.forEach(cell=>{
+cell.innerText=colState[col].eng?"ENG":"P";
+});
+updateAbsList(col);
+}
+
+function lockColumn(col){
+lockedColumns[col]=true;
+document.querySelectorAll(`td[data-col='${col}']`)
+.forEach(cell=>cell.classList.add("locked"));
+}
+
+function unlockColumn(col){
+lockedColumns[col]=false;
+document.querySelectorAll(`td[data-col='${col}']`)
+.forEach(cell=>cell.classList.remove("locked"));
+}
+
+function classChanged(){
+selectedClass=document.getElementById("classSelect").value;
+generateStudents();
+generateGrid();
+updateDayOrder();
+}
+
+function finalSubmit(){
+
+let date=document.getElementById("attendanceDate").value;
+if(!date){alert("Select Date");return;}
+
+let parts=date.split("-");
+let formattedDate=parts[2]+"-"+parts[1]+"-"+parts[0];
+
+let data=[["Register No","Hour","Status"]];
+
+students.forEach(student=>{
+for(let i=0;i<5;i++){
+if(tempData[student][i]==="A"){
+data.push([student,"H"+(i+1),"Absent"]);
+}
+}
+});
+
+let wb=XLSX.utils.book_new();
+let ws=XLSX.utils.aoa_to_sheet(data);
+XLSX.utils.book_append_sheet(wb,ws,"Attendance");
+XLSX.writeFile(wb, formattedDate + ".xlsx");
+
+/* SUCCESS ANIMATION */
+document.getElementById("successBox").style.display="block";
+let coin=document.getElementById("coin");
+coin.classList.add("spin");
+
+setTimeout(()=>{
+coin.classList.remove("spin");
+coin.textContent="✔️";
+},1000);
+}
+
+generateStudents();
+generateGrid();
+
+</script>
+
+</body>
+</html>
