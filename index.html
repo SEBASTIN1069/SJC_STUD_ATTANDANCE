@@ -12,6 +12,9 @@
 body{
     margin:0;
     font-family:Arial;
+    background:black;
+    color:white;
+
 }
 
 /* LOGIN STYLE */
@@ -20,7 +23,7 @@ height:100vh;
 display:flex;
 justify-content:center;
 align-items:left;
-background:#eee;
+background:white;
 }
 
 .loginBox{
@@ -85,10 +88,18 @@ display:none;
 label{font-weight:bold;}
 select,input{padding:8px;border-radius:5px;border:none;}
 .classSelect{padding:8px;border-radius:5px;border:none;background:white;font-weight:bold;cursor:pointer;}
-.dashboard{max-width:1100px;margin:20px auto;background:rgb(255, 255, 255);color:rgb(0, 0, 0);padding:20px;border-radius:8px;overflow-x:auto;}
+.dashboard{
+max-width:1100px;
+margin:20px auto;
+background:#111;        /* dark background */
+color:white;            /* text white */
+padding:20px;
+border-radius:8px;
+overflow-x:auto;
+}
 /* ===== COLUMN SIZE CONTROL ===== */
 .grid-table{
-    width:auto;              /* prevent stretching */
+    width:100%;              /* prevent stretching */
     border-collapse:collapse;
     table-layout:fixed;      /* important for equal width */
     margin:auto;
@@ -99,20 +110,57 @@ select,input{padding:8px;border-radius:5px;border:none;}
     border:1px solid #ccc;
     padding:4px;
     text-align:center;
-    width:70px;   /* 👈 THIS IS THE SIZE CONTROL */
 }
-.grid-table th,.grid-table td{border:1px solid #ccc;padding:6px;text-align:center;}
+.grid-table td:first-child{
+    font-weight:bold;   /* EDIT: D.No column bold */
+}
+/* ===== REDUCE ONLY H1â€“H5 ===== */
+
+.grid-table th:not(:first-child),
+.grid-table td:not(:first-child){
+    width:40px;   /* ðŸ‘ˆ CHANGE THIS VALUE */
+}
+ 
+
 .box{cursor:pointer;font-weight:bold;}
-.present{color:green;}
+.present{color:white;}
 .absent{color:red;}
 .locked{background:#ddd;pointer-events:none;}
-.summaryBtn{display:block;width:90px;margin:5px auto;padding:6px;border-radius:8px;color:white;font-weight:bold;cursor:pointer;}
+.summaryBtn{
+    display:block;
+    width:38px;
+    margin:2px auto;
+    padding:2px;
+    border-radius:4px;
+    font-size:9px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
 .grey{background:#6c757d;}
 .blue{background:#0275d8;}
 .purple{background:#6f42c1;}
 .greenBtn{background:#28a745;}
-.absBox{border:1px solid #999;min-height:60px;max-height:100px;overflow-y:auto;font-size:12px;margin-top:4px;padding:3px;background:#f8f9fa;}
-.finalSubmit{background:rgb(255, 255, 0);padding:8px 20px;font-weight:bold;border:none;border-radius:6px;cursor:pointer;}
+.absBox{
+    border:1px solid #444;
+    min-height:35px;
+    max-height:60px;
+    overflow-y:auto;
+    font-size:9px;
+    margin-top:2px;
+    padding:2px;
+    background:#000;   /* black */
+    color:white;       /* text white */
+}
+.finalSubmit{
+background:yellow !important;   /* button yellow */
+color:black;                    /* text black */
+padding:8px 20px;
+font-weight:bold;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
 #successBox{display:none;text-align:center;margin-top:10px;}
 #coin{font-size:40px;display:inline-block;transition: transform 1s ease;}
 .spin{animation: spin 1s linear;}
@@ -240,7 +288,7 @@ let tempData={}, originalData={}, lockedColumns={}, colState={};
 function generateStudents(){
 students=[];
 let range=classStudents[selectedClass];
-let removedNumbers = [507, 508, 522, 561];
+let removedNumbers = [507, 508, 522, 536, 535, 551, 558, 559,561];
 for(let i=range.start;i<=range.end;i++){
 if(selectedClass==="A" && removedNumbers.includes(i)){
 continue;
@@ -352,6 +400,9 @@ cell.className="box present";
 tempData[student][index]="P";
 }
 updateAbsList(index);
+
+localStorage.setItem("attendanceData",
+JSON.stringify(tempData));
 }
 
 function updateAbsList(col){
@@ -362,7 +413,7 @@ let count=0;
 students.forEach(student=>{
 if(tempData[student][col]==="A"){
 count++;
-absList.innerHTML+=student+"<br>";
+absList.innerHTML+=student.slice(-3)+"<br>";
 }
 });
 absCount.innerText=count;
@@ -402,7 +453,28 @@ function classChanged(){
 selectedClass=document.getElementById("classSelect").value;
 generateStudents();
 generateGrid();
-updateDayOrder();
+/* LOAD SAVED DATA */
+
+let saved = localStorage.getItem("attendanceData");
+
+if(saved){
+tempData = JSON.parse(saved);
+}
+}
+function toggleAttendance(student,index,cell){
+if(lockedColumns[index]) return;
+if(cell.innerText==="P"){
+cell.innerText="A";
+cell.className="box absent";
+tempData[student][index]="A";
+}else{
+cell.innerText="P";
+cell.className="box present";
+tempData[student][index]="P";
+}
+updateAbsList(index);
+
+localStorage.setItem("attendanceData", JSON.stringify(tempData));
 }
 
 function finalSubmit(){
@@ -427,6 +499,7 @@ let wb=XLSX.utils.book_new();
 let ws=XLSX.utils.aoa_to_sheet(data);
 XLSX.utils.book_append_sheet(wb,ws,"Attendance");
 XLSX.writeFile(wb, formattedDate + ".xlsx");
+localStorage.removeItem("attendanceData");
 
 /* SUCCESS ANIMATION */
 document.getElementById("successBox").style.display="block";
@@ -435,7 +508,12 @@ coin.classList.add("spin");
 
 setTimeout(()=>{
 coin.classList.remove("spin");
+
+/* SHOW GREEN TICK */
 coin.textContent="✔️";
+coin.style.color="lime";
+coin.style.fontSize="45px";
+
 },1000);
 }
 
