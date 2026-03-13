@@ -186,6 +186,7 @@ body.attendanceMode{
 background:linear-gradient(to right,#210f27,#412043,#642c60);
 color:white;
 }
+
 </style>
 </head>
 
@@ -515,8 +516,17 @@ if(!date){alert("Select Date");return;}
 let parts=date.split("-");
 let formattedDate=parts[2]+"-"+parts[1]+"-"+parts[0];
 
-/* EDIT: Excel format - show absent hours together */
-let data=[["Register No","Absent Hours"]];
+/* EDIT: Excel report with subject names */
+
+let data=[["Register No","Absent Details"]];
+
+let subjects=[
+document.getElementById("h1").innerText.split(" - ")[1],
+document.getElementById("h2").innerText.split(" - ")[1],
+document.getElementById("h3").innerText.split(" - ")[1],
+document.getElementById("h4").innerText.split(" - ")[1],
+document.getElementById("h5").innerText.split(" - ")[1]
+];
 
 students.forEach(student=>{
 
@@ -524,7 +534,7 @@ let hours=[];
 
 for(let i=0;i<5;i++){
 if(tempData[student][i]==="A"){
-hours.push("H"+(i+1));
+hours.push("H"+(i+1)+"("+subjects[i]+")");
 }
 }
 
