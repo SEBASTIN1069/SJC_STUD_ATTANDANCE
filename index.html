@@ -125,7 +125,13 @@ overflow-x:auto;
 .box{cursor:pointer;font-weight:bold;}
 .present{color:white;}
 .absent{color:red;}
-.locked{background:#ddd;pointer-events:none;}
+.locked{
+background:rgba(0,0,0,0.6);
+backdrop-filter:blur(2px);
+pointer-events:none;
+color:#888;
+border-color:#333;
+}
 .summaryBtn{
     display:block;
     width:38px;
@@ -524,3 +530,4 @@ generateGrid();
 
 </body>
 </html>
+
