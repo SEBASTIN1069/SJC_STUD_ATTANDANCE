@@ -187,6 +187,23 @@ background:linear-gradient(to right,#210f27,#412043,#642c60);
 color:white;
 }
 
+/* HEADER LOGO STYLE */
+
+.headerBox{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:15px;
+padding:15px;
+background:rgba(0,0,0,0.3);
+}
+
+.collegeLogo{
+width:100px;
+height:100px;
+object-fit:contain;
+}
+
 </style>
 </head>
 
@@ -213,9 +230,15 @@ color:white;
 <!-- ATTENDANCE PAGE (UNCHANGED STRUCTURE) -->
 <div id="attendancePage">
 
-<header>
+<header class="headerBox">
+
+<img src="SJC LOGO 2.png" class="collegeLogo">
+
+<div>
 <h2>St. Joseph's College (Autonomous)</h2>
 <h3>Department of Computer Science</h3>
+</div>
+
 </header>
 
 <div class="controls">
