@@ -132,6 +132,16 @@ pointer-events:none;
 color:#888;
 border-color:#333;
 }
+
+/* Fade animation */
+.locked{
+animation:lockFade 0.4s ease;
+}
+
+@keyframes lockFade{
+from{opacity:1;}
+to{opacity:0.6;}
+}
 .summaryBtn{
     display:block;
     width:38px;
@@ -443,16 +453,30 @@ cell.innerText=colState[col].eng?"ENG":"P";
 updateAbsList(col);
 }
 
+/* EDIT: Lock column + show lock icon */
 function lockColumn(col){
 lockedColumns[col]=true;
+
 document.querySelectorAll(`td[data-col='${col}']`)
-.forEach(cell=>cell.classList.add("locked"));
+.forEach(cell=>{
+cell.classList.add("locked");
+
+if(!cell.innerText.includes("")){
+cell.innerText = cell.innerText + "";
+}
+});
 }
 
+/* EDIT: Unlock column + remove lock icon */
 function unlockColumn(col){
 lockedColumns[col]=false;
+
 document.querySelectorAll(`td[data-col='${col}']`)
-.forEach(cell=>cell.classList.remove("locked"));
+.forEach(cell=>{
+cell.classList.remove("locked");
+
+cell.innerText = cell.innerText.replace(" ","");
+});
 }
 
 function classChanged(){
@@ -530,4 +554,3 @@ generateGrid();
 
 </body>
 </html>
-
