@@ -515,14 +515,23 @@ if(!date){alert("Select Date");return;}
 let parts=date.split("-");
 let formattedDate=parts[2]+"-"+parts[1]+"-"+parts[0];
 
-let data=[["Register No","Hour","Status"]];
+/* EDIT: Excel format - show absent hours together */
+let data=[["Register No","Absent Hours"]];
 
 students.forEach(student=>{
+
+let hours=[];
+
 for(let i=0;i<5;i++){
 if(tempData[student][i]==="A"){
-data.push([student,"H"+(i+1),"Absent"]);
+hours.push("H"+(i+1));
 }
 }
+
+if(hours.length>0){
+data.push([student, hours.join(" ")]);
+}
+
 });
 
 let wb=XLSX.utils.book_new();
