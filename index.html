@@ -10,32 +10,18 @@
     <style>
 
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-
     body{
-    font-family: 'Poppins', sans-serif;
+       font-family: 'Poppins', sans-serif;
+       min-height: 100vh;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       background: url('./bg.jpg');
+       background-size: cover;
+       background-position: center;
+        overflow-x: hidden;
+       transition: all 0.4s ease;
 }
-    *{
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-        font-family: sans-serif;
-    }
-
-    /* ===== NEW LOGIN DESIGN ===== */
-    body{
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: url('./bg.jpg');
-    background-size: cover;
-    background-position: center;
-
-    transition: all 0.4s ease;
-    }
-    body{
-    overflow-x: hidden;
-    }
 
     /* attendance mode override */
     body.attendanceMode{
@@ -229,6 +215,155 @@
         padding: 4px;
     }
 }
+.student-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:white;
+    color:black;
+    border-radius:50px;
+    padding:10px 20px;
+    margin:15px 0;
+    position:relative;
+}
+   
+.hour-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    padding:0 20px;
+    margin-bottom:10px;
+    color:white;
+    font-weight:bold;
+}
+.empty-space{
+    width:250px; /* same width as student info area */
+}
+
+.hour{
+    width:70px;
+    text-align:center;
+}
+
+.hour-labels{
+    display:flex;
+    gap:15px;
+}
+
+.hour-labels span{
+    width:70px;
+    text-align:center;
+}
+
+.student-info{
+    flex:1;
+    margin:0 20px;
+}
+
+.circle{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    font-weight:bold;
+    color:white;
+}
+
+.circle.left{
+    background:#2b0dbb;
+}
+
+.circle.right{
+    background:#2b0dbb;
+    cursor:pointer;
+}
+.circle-group{
+    display:flex;
+    gap:15px;
+}
+.hour-column{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:15px;
+    width:70px; /* 🔥 MUST ADD */
+}
+
+.free-btn{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    border:none;
+    background:#f1c94a;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.lock-btn{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    border:none;
+    background:#777;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* FREE BUTTON */
+.free-btn{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    border:none;
+    background:#f1c94a;  /* yellow */
+    font-weight:bold;
+    cursor:pointer;
+}
+.bottom-controls{
+    display:flex;
+    align-items:flex-start;
+    gap:15px; /* ✅ same gap as H1-H5 */
+    padding:20px;
+    margin-top:20px;
+
+    justify-content: flex-end; /* 🔥 THIS LINE */
+}
+
+.bottom-controls .hour-column{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:15px;
+}
+.absentees-section{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin:20px;
+    flex-wrap:wrap;
+}
+
+.abs-box{
+    background:white;
+    color:black;
+    width:180px;
+    min-height:120px;
+    border-radius:10px;
+    padding:10px;
+    text-align:center;
+    font-size:13px;
+}
+
+.abs-box h4{
+    margin-bottom:8px;
+    font-size:14px;
+}
+
+
     </style>
     </head>
 
@@ -277,7 +412,7 @@
 
     <div class="controls">
     <label>Date:</label>
-    <input type="date" id="attendanceDate">
+    <input type="date" id="attendanceDate" onchange="loadAttendance()">
 
     <label>CLASS:</label>
     <select id="classSelect" class="classSelect" onchange="classChanged()">
@@ -306,24 +441,94 @@
     </div>
 
     <div class="dashboard">
-    <table class="grid-table">
-    <thead>
-    <tr>
-    <th>D.No.</th>
-    <th id="h1">H1</th>
-    <th id="h2">H2</th>
-    <th id="h3">H3</th>
-    <th id="h4">H4</th>
-    <th id="h5">H5</th>
-    </tr>
-    </thead>
-    <tbody id="attendanceGrid"></tbody>
-    </table>
+    <div class="hour-header">
+
+    <div class="empty-space"></div>
+
+
+    <div class="hour-labels">
+        <span id="h1">H1</span>
+        <span id="h2">H2</span>
+        <span id="h3">H3</span>
+        <span id="h4">H4</span>
+        <span id="h5">H5</span>
+    </div>
+</div>
+    <div id="studentContainer"></div>
+    <!-- ✅ ADD THIS BELOW STUDENT CONTAINER -->
+<div class="bottom-controls">
+
+    <div class="hour-column">
+        <button class="free-btn" onclick="toggleFree(0)">FREE</button>
+        <button class="lock-btn" onclick="toggleLock(0)">LOCK 🔒</button>
+    </div>
+
+    <div class="hour-column">
+        <button class="free-btn" onclick="toggleFree(1)">FREE</button>
+        <button class="lock-btn" onclick="toggleLock(1)">LOCK 🔒</button>
+    </div>
+
+    <div class="hour-column">
+        <button class="free-btn" onclick="toggleFree(2)">FREE</button>
+        <button class="lock-btn" onclick="toggleLock(2)">LOCK 🔒</button>
+    </div>
+
+    <div class="hour-column">
+        <button class="free-btn" onclick="toggleFree(3)">FREE</button>
+        <button class="lock-btn" onclick="toggleLock(3)">LOCK 🔒</button>
+    </div>
+
+    <div class="hour-column">
+        <button class="free-btn" onclick="toggleFree(4)">FREE</button>
+        <button class="lock-btn" onclick="toggleLock(4)">LOCK 🔒</button>
     </div>
 
     </div>
+    <!-- ✅ ABSENTEES BOXES -->
+<div class="absentees-section">
+
+    <div class="abs-box">
+        <h4>H1 ABSENTEES (<span id="countH1">0</span>)</h4>
+        <div id="absH1"></div>
+    </div>
+
+    <div class="abs-box">
+        <h4>H2 ABSENTEES (<span id="countH2">0</span>)</h4>
+        <div id="absH2"></div>
+    </div>
+
+    <div class="abs-box">
+        <h4>H3 ABSENTEES (<span id="countH3">0</span>)</h4>
+        <div id="absH3"></div>
+    </div>
+
+    <div class="abs-box">
+        <h4>H4 ABSENTEES (<span id="countH4">0</span>)</h4>
+        <div id="absH4"></div>
+    </div>
+
+    <div class="abs-box">
+        <h4>H5 ABSENTEES (<span id="countH5">0</span>)</h4>
+        <div id="absH5"></div>
+    </div>
+
+</div>
+    </div>
+    </div>
+    
+    
 
     <script>
+
+let h1El, h2El, h3El, h4El, h5El;
+window.onload = function() {
+    h1El = document.getElementById("h1");
+    h2El = document.getElementById("h2");
+    h3El = document.getElementById("h3");
+    h4El = document.getElementById("h4");
+    h5El = document.getElementById("h5");
+};
+        
 
     /* LOGIN SYSTEM */
     function login(event){
@@ -352,7 +557,8 @@
 
             generateStudents();
             generateGrid();
-            updateDayOrder();
+            loadAttendance();
+           
 
             document.getElementById("userDisplay").innerText = u;
 
@@ -375,7 +581,12 @@
 
     let students=[];
     let selectedClass="A";
-    let tempData={}, originalData={}, lockedColumns={}, colState={};
+    let tempData = {};
+    let originalData = {};
+    let colState = {};
+
+    let lockedColumns = [false, false, false, false, false];
+    let freeColumns = [false, false, false, false, false];
 
     function generateStudents(){
     students=[];
@@ -384,38 +595,66 @@
     students.push("25UCS"+i);
     }
     }
+function generateGrid(){
 
-    function generateGrid(){
-    attendanceGrid.innerHTML="";
-    tempData={}; originalData={}; lockedColumns={}; colState={};
+    let container = document.getElementById("studentContainer");
+    container.innerHTML = "";
 
-    students.forEach(student=>{
-    let row="<tr><td>"+student+"</td>";
-    tempData[student]=["P","P","P","P","P"];
-    originalData[student]=["P","P","P","P","P"];
-    for(let i=0;i<5;i++){
-    row+=`<td class="box present" data-col="${i}" onclick="toggleAttendance('${student}',${i},this)">P</td>`;
-    }
-    row+="</tr>";
-    attendanceGrid.innerHTML+=row;
+    students.forEach((student, index) => {
+
+        let row = document.createElement("div");
+        row.className = "student-row";
+
+        row.innerHTML = `
+    <div class="circle left">${index+1}</div>
+
+    <div class="student-info">
+        <div><b>D.No:</b> ${student}</div>
+        <div><b>Name:</b> Student ${index+1}</div>
+    </div>
+
+    <div class="circle-group">
+        <div class="circle right" onclick="toggleCircle(this)">P</div>
+        <div class="circle right" onclick="toggleCircle(this)">P</div>
+        <div class="circle right" onclick="toggleCircle(this)">P</div>
+        <div class="circle right" onclick="toggleCircle(this)">P</div>
+        <div class="circle right" onclick="toggleCircle(this)">P</div>
+    </div>
+`;
+            
+
+        container.appendChild(row);
     });
+}
+function toggleCircle(el){
 
-    let summaryRow="<tr><td><b>Summary</b></td>";
-    for(let i=0;i<5;i++){
-    lockedColumns[i]=false;
-    colState[i]={free:false,eng:false};
-    summaryRow+=`
-    <td>
-    <div>Abs (<span id="absCount${i}">0</span>)</div>
-    <div id="absList${i}" class="absBox"></div>
-    <div class="summaryBtn grey" onclick="toggleFree(${i})">Free</div>
-    <div class="summaryBtn greenBtn" onclick="lockColumn(${i})">Submit</div>
-    <div class="summaryBtn blue" onclick="unlockColumn(${i})">Edit</div>
-    </td>`;
+    let student = el.closest(".student-row")
+                    .querySelector(".student-info div")
+                    .innerText.split(": ")[1];
+
+    let index = Array.from(el.parentElement.children).indexOf(el);
+
+    if(freeColumns[index]) return;
+
+    if(lockedColumns[index]) return;
+
+    if(!tempData[student]){
+        tempData[student] = ["P","P","P","P","P"];
     }
-    summaryRow+="</tr>";
-    attendanceGrid.innerHTML+=summaryRow;
+
+    if(el.innerText === "P"){
+        el.innerText = "A";
+        el.style.background = "red";
+        tempData[student][index] = "A";
+    }else{
+        el.innerText = "P";
+        el.style.background = "#2b0dbb";
+        tempData[student][index] = "P";
     }
+
+    saveAttendance(); // 🔥 auto save
+    updateAbsentees();
+}
 
     function updateDayOrder(){
 
@@ -476,101 +715,40 @@ if(day==="F") set("PYT","HE","MAT","ENG","EVS");
 }
 
 }
-    function setHeaders(h1,h2,h3,h4,h5){
-    h1El.innerText="H1 - "+h1;
-    h2El.innerText="H2 - "+h2;
-    h3El.innerText="H3 - "+h3;
-    h4El.innerText="H4 - "+h4;
-    h5El.innerText="H5 - "+h5;
-    }
-
-    const h1El=document.getElementById("h1");
-    const h2El=document.getElementById("h2");
-    const h3El=document.getElementById("h3");
-    const h4El=document.getElementById("h4");
-    const h5El=document.getElementById("h5");
-
-    function toggleAttendance(student,index,cell){
-    if(lockedColumns[index]) return;
-    if(cell.innerText==="P"){
-    cell.innerText="A";
-    cell.className="box absent";
-    tempData[student][index]="A";
-    }else{
-    cell.innerText="P";
-    cell.className="box present";
-    tempData[student][index]="P";
-    }
-    updateAbsList(index);
-
-    saveAttendance();
-    }
-
-    function updateAbsList(col){
-    let absList=document.getElementById("absList"+col);
-    let absCount=document.getElementById("absCount"+col);
-    absList.innerHTML="";
-    let count=0;
-    students.forEach(student=>{
-    if(tempData[student][col]==="A"){
-    count++;
-    absList.innerHTML+=student+"<br>";
-    }
-    });
-    absCount.innerText=count;
-    }
-
-    function toggleFree(col){
-    colState[col].free=!colState[col].free;
-    let cells=document.querySelectorAll(`td[data-col='${col}']`);
-    cells.forEach(cell=>{
-    cell.innerText=colState[col].free?"-":"P";
-    });
-    updateAbsList(col);
-    }
-
-    function toggleENG(col){
-    colState[col].eng=!colState[col].eng;
-    let cells=document.querySelectorAll(`td[data-col='${col}']`);
-    cells.forEach(cell=>{
-    cell.innerText=colState[col].eng?"ENG":"P";
-    });
-    updateAbsList(col);
-    }
-
-    function lockColumn(col){
-    lockedColumns[col]=true;
-    document.querySelectorAll(`td[data-col='${col}']`)
-    .forEach(cell=>cell.classList.add("locked"));
-    }
-
-    function unlockColumn(col){
-    lockedColumns[col]=false;
-    document.querySelectorAll(`td[data-col='${col}']`)
-    .forEach(cell=>cell.classList.remove("locked"));
-    }
 
     function classChanged(){
     selectedClass=document.getElementById("classSelect").value;
+     tempData = {};   // 🔥 reset
+      freeColumns = [false,false,false,false,false];
+      lockedColumns = [false,false,false,false,false];
     generateStudents();
     generateGrid();
-    updateDayOrder();
     }
 
     function finalSubmit(){
-    let date=document.getElementById("attendanceDate").value;
-    if(!date){ alert("Select Date"); return; }
-    document.getElementById("successBox").style.display="block";
-    let coin=document.getElementById("coin");
-    coin.classList.add("spin");
-    setTimeout(()=>{
-    coin.classList.remove("spin");
-    coin.textContent="✅";
-    },1000);
+
+    let date = document.getElementById("attendanceDate").value;
+    if(!date){ 
+        alert("Select Date"); 
+        return; 
     }
 
-    generateStudents();
-    generateGrid();
+    saveAttendance();
+
+    document.getElementById("successBox").style.display="block";
+
+    let coin = document.getElementById("coin");
+    coin.classList.add("spin");
+
+    // 👉 AFTER 1 second (coin animation), download
+    setTimeout(()=>{
+        coin.classList.remove("spin");
+        coin.textContent="✅";
+
+        exportToExcel(); // 🔥 DOWNLOAD HERE
+
+    },1000);
+}
 
     function logout(){
         sessionStorage.clear();
@@ -598,44 +776,255 @@ if(day==="F") set("PYT","HE","MAT","ENG","EVS");
     }
     function loadAttendance(){
 
-        let date = document.getElementById("attendanceDate").value;
+    let date = document.getElementById("attendanceDate").value;
+    if(!date) return;
 
-        if(!date) return;
- 
-        let key = selectedClass + "_" + date;
+    let key = selectedClass + "_" + date;
+    let data = localStorage.getItem(key);
 
-        let data = localStorage.getItem(key);
+    if(!data) return;
 
-        if(!data) return;
+    tempData = JSON.parse(data);
 
-        tempData = JSON.parse(data);
+    document.querySelectorAll(".student-row").forEach(row => {
 
-     // 🔥 UI update
-        students.forEach(student=>{
-        for(let i=0;i<5;i++){
+        let student = row.querySelector(".student-info div")
+                 .textContent.split(": ")[1]
+                 .trim();
+        let circles = row.querySelectorAll(".circle.right");
 
-        let cells = document.querySelectorAll(`td[data-col='${i}']`);
+        if(tempData[student]){
+            circles.forEach((circle, i) => {
 
-        cells.forEach(cell=>{
-        let row = cell.parentElement.firstChild.innerText;
+                if(tempData[student][i] === "A"){
+                      circle.innerText = "A";
+                     circle.style.background = "red";
 
-        if(tempData[row]){
+                }else if(tempData[student][i] === "-"){
+                      circle.innerText = "-";
+                      circle.style.background = "#f1c94a";
 
-        if(tempData[row][i]==="A"){
-        cell.innerText="A";
-        cell.className="box absent";
-    }else{
-        cell.innerText="P";
-        cell.className="box present";
-    }
+                }else{
+                     circle.innerText = "P";
+                     circle.style.background = "#2b0dbb";
+                }
+            });
+        }
 
-    }
-      });
-
-    }
-      });
+    });
 
 }
+/* ===== FREE + LOCK SYSTEM ===== */
+
+function toggleFree(col){
+
+    freeColumns[col] = !freeColumns[col];
+
+    document.querySelectorAll(".student-row").forEach(row => {
+
+        let student = row.querySelector(".student-info div")
+                         .innerText.split(": ")[1];
+
+        let circles = row.querySelectorAll(".circle.right");
+
+        // if student not in tempData, create default
+        if(!tempData[student]){
+            tempData[student] = ["P","P","P","P","P"];
+        }
+
+        if(freeColumns[col]){
+            // 👉 FREE ON
+            circles[col].innerText = "-";
+            circles[col].style.background = "#f1c94a";
+
+            tempData[student][col] = "-";  // 🔥 IMPORTANT
+        }else{
+            // 👉 FREE OFF
+            circles[col].innerText = "P";
+            circles[col].style.background = "#2b0dbb";
+
+            tempData[student][col] = "P";  // 🔥 IMPORTANT
+        }
+
+    });
+
+    saveAttendance(); // 🔥 auto save pannum
+    updateAbsentees();
+}
+
+function toggleLock(col){
+
+    lockedColumns[col] = !lockedColumns[col];
+
+    document.querySelectorAll(".student-row").forEach(row => {
+
+        let circles = row.querySelectorAll(".circle.right");
+
+        if(lockedColumns[col]){
+            circles[col].style.pointerEvents = "none";
+            circles[col].style.opacity = "0.5";
+        }else{
+            circles[col].style.pointerEvents = "auto";
+            circles[col].style.opacity = "1";
+        }
+
+    });
+}
+function updateAbsentees(){
+
+    let abs = [[],[],[],[],[]];
+
+    document.querySelectorAll(".student-row").forEach(row => {
+
+        let student = row.querySelector(".student-info div")
+                         .innerText.split(": ")[1];
+
+        let circles = row.querySelectorAll(".circle.right");
+
+        circles.forEach((c, i) => {
+            if(c.innerText === "A"){
+                abs[i].push(student);
+            }
+        });
+
+    });
+
+    function formatAbs(list){
+        return list.map(s => `<span style="color:red;font-weight:bold;">${s}</span>`).join("<br>");
+    }
+
+    document.getElementById("absH1").innerHTML = formatAbs(abs[0]);
+    document.getElementById("absH2").innerHTML = formatAbs(abs[1]);
+    document.getElementById("absH3").innerHTML = formatAbs(abs[2]);
+    document.getElementById("absH4").innerHTML = formatAbs(abs[3]);
+    document.getElementById("absH5").innerHTML = formatAbs(abs[4]);
+
+    // ✅ COUNT
+    document.getElementById("countH1").innerText = abs[0].length;
+    document.getElementById("countH2").innerText = abs[1].length;
+    document.getElementById("countH3").innerText = abs[2].length;
+    document.getElementById("countH4").innerText = abs[3].length;
+    document.getElementById("countH5").innerText = abs[4].length;
+}
+function exportToExcel(){
+
+    let date = document.getElementById("attendanceDate").value;
+
+    if(!date){
+        alert("Select Date");
+        return;
+    }
+
+    let subjects = [
+        document.getElementById("h1").innerText,
+        document.getElementById("h2").innerText,
+        document.getElementById("h3").innerText,
+        document.getElementById("h4").innerText,
+        document.getElementById("h5").innerText
+    ];
+
+    let abs = [[],[],[],[],[]];
+
+    students.forEach(student => {
+
+        let data = tempData[student] || ["P","P","P","P","P"];
+
+        data.forEach((val, i) => {
+            if(val === "A"){
+                abs[i].push(student);
+            }
+        });
+    });
+
+    let table = `<table border="1">`;
+
+    // 🔷 TITLE
+    table += `<tr>
+        <th colspan="7" style="font-size:18px;">
+        ABSENTEES REPORT - ${date}
+        </th>
+    </tr>`;
+
+    table += `<tr></tr>`; // space
+
+    // =========================
+    // ✅ SECTION 1: HOUR-WISE ABSENTEES
+    // =========================
+    table += `<tr>
+        <th>Hour</th>
+        <th>Subject</th>
+        <th>Absentees</th>
+        <th>Total</th>
+    </tr>`;
+
+    abs.forEach((list, i) => {
+        table += `<tr>
+            <td>H${i+1}</td>
+            <td>${subjects[i]}</td>
+            <td>${list.join(", ")}</td>
+            <td>${list.length}</td>
+        </tr>`;
+    });
+
+    table += `<tr></tr><tr></tr>`; // gap
+
+    // =========================
+    // ✅ SECTION 2: STUDENT-WISE ABSENCE
+    // =========================
+    table += `<tr>
+        <th>Student</th>
+        <th colspan="5">Absent Hours</th>
+        <th>Total</th>
+    </tr>`;
+
+    students.forEach(student => {
+
+        let data = tempData[student] || ["P","P","P","P","P"];
+
+        let absentHours = [];
+        data.forEach((val, i) => {
+            if(val === "A"){
+                absentHours.push("H"+(i+1));
+            }
+        });
+
+        if(absentHours.length > 0){
+            table += `<tr>
+                <td>${student}</td>
+                <td colspan="5">${absentHours.join(", ")}</td>
+                <td>${absentHours.length}</td>
+            </tr>`;
+        }
+    });
+
+    table += `<tr></tr><tr></tr>`; // gap
+
+    // =========================
+    // ✅ SECTION 3: TOTAL SUMMARY
+    // =========================
+    let totalAll = abs.reduce((sum, arr) => sum + arr.length, 0);
+
+    table += `<tr>
+        <th colspan="6">TOTAL ABSENTEES (ALL HOURS)</th>
+        <th>${totalAll}</th>
+    </tr>`;
+
+    table += `</table>`;
+
+    let blob = new Blob([table], {
+        type: "application/vnd.ms-excel"
+    });
+
+    let a = document.createElement("a");
+
+    let today = new Date().toISOString().split("T")[0];
+
+    a.href = URL.createObjectURL(blob);
+    a.download = today + ".xls";
+
+    a.click();
+}
+      
 
     </script>
 
