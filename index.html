@@ -27,8 +27,7 @@
        background-attachment: fixed;
        position: relative;
        overflow-x: hidden;
-       transition: all 0.4s ease;
-       animation: bgMove 15s ease infinite;
+       transition: background 0.4s ease;
 }
 body::before{
 
@@ -51,19 +50,6 @@ body::before{
 
     z-index:-1;
 }
-@keyframes bgMove{
-    0%{
-        background-position: center;
-    }
-
-    50%{
-        background-position: top;
-    }
-
-    100%{
-        background-position: center;
-    }
-}
 
     /* attendance mode override */
     body.attendanceMode{
@@ -83,8 +69,8 @@ body::before{
     padding: 40px 30px;
     border-radius: 25px;
 
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 
     box-shadow:
     0 8px 32px rgba(0,0,0,0.25),
@@ -222,8 +208,8 @@ body::before{
     rgba(255,255,255,0.08)
     );
 
-    backdrop-filter: blur(35px);
-    -webkit-backdrop-filter: blur(35px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 
     border:1px solid rgba(255,255,255,0.25);
 
@@ -674,11 +660,10 @@ body{
 .student-row:hover{
 
     transform:
-    translateY(-5px)
-    scale(1.01);
+    translateY(-2px);
 
     box-shadow:
-    0 15px 35px rgba(0,0,0,0.18);
+    0 5px 12px rgba(0,0,0,0.12)
 
 }
 .finalSubmit,
@@ -725,6 +710,27 @@ body{
     padding:15px;
 
     z-index:999;
+}
+.student-row,
+.dashboard,
+.circle,
+.login-form{
+
+    will-change: transform;
+
+    transform: translateZ(0);
+
+    backface-visibility:hidden;
+}
+@media(max-width:768px){
+.dashboard,
+.student-row,
+.login-form,
+header{
+
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    }
 }
 
     </style>
@@ -1447,7 +1453,7 @@ function togglePassword(){
 }
 const rainContainer = document.querySelector(".rain-container");
 
-for(let i=0; i<120; i++){
+for(let i=0; i<35; i++){
 
     let drop = document.createElement("div");
 
