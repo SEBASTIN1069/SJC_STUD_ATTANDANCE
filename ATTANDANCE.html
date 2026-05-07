@@ -21,6 +21,20 @@
        background-position: center;
         overflow-x: hidden;
        transition: all 0.4s ease;
+       animation: bgMove 15s ease infinite;
+}
+@keyframes bgMove{
+    0%{
+        background-position: center;
+    }
+
+    50%{
+        background-position: top;
+    }
+
+    100%{
+        background-position: center;
+    }
 }
 
     /* attendance mode override */
@@ -31,17 +45,39 @@
     }
 
     /* LOGIN BOX */
-    .login-form{
-        background: rgba(64, 64, 64, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        padding: 30px;
-        border-radius: 16px;
-        backdrop-filter: blur(25px);
-        text-align: center;
-        color: white;
-        width: 400px;
-        box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.15);
+   .login-form{
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+
+    width: 400px;
+    max-width: 95%;
+
+    padding: 40px 30px;
+    border-radius: 25px;
+
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+
+    box-shadow:
+    0 8px 32px rgba(0,0,0,0.25),
+    inset 0 0 1px rgba(255,255,255,0.3);
+
+    text-align:center;
+    color:white;
+
+    animation: floatBox 3s ease-in-out infinite;
+}
+@keyframes floatBox{
+    0%{
+        transform: translateY(0px);
     }
+    50%{
+        transform: translateY(-8px);
+    }
+    100%{
+        transform: translateY(0px);
+    }
+}
 
     .login-title{
         font-size: 40px;
@@ -58,7 +94,7 @@
         box-sizing:border-box;
         background: rgba(255, 255, 255, 0.3);
         border: none;
-        padding: 12px 12px 12px 45px;
+        padding: 12px 50px 12px 45px;
         border-radius: 99px;
         outline: 3px solid transparent;
         transition: 0.3s;
@@ -94,18 +130,31 @@
     box-shadow: 0 0 15px rgba(47,156,244,0.6);
     }
 
-    .input-box i{
-        position:absolute;
-        left:15px;
-        top:50%;
-        transform:translateY(-50%);
-        color:white;
-    }
+    
 
     .input-box{
         position:relative;
     }
 
+    .input-box .fa-user,
+    .input-box .fa-lock{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    color:white;
+}
+
+#eyeIcon{
+    position:absolute;
+    right:15px;
+    left:auto; /* 🔥 IMPORTANT */
+    top:50%;
+    transform:translateY(-50%);
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
 
     #attendancePage header{text-align:center;padding:15px;background:rgba(0,0,0,0.3);}
     .controls{display:flex;justify-content:center;align-items:center;gap:15px;margin:20px;flex-wrap:wrap;}
@@ -405,7 +454,68 @@
     width: 100%;
 }
 }
+@media only screen and (max-width:768px){
 
+    body{
+        padding:20px;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .login-form{
+        width:100%;
+        max-width:350px;
+        padding:30px 20px;
+    }
+
+    .login-title{
+        font-size:32px;
+    }
+
+    .input-box input{
+        font-size:15px;
+    }
+
+    .login-btn{
+        font-size:15px;
+    }
+}
+.remember-box{
+    text-align:left;
+    margin:10px 0 20px;
+    color:white;
+    font-size:14px;
+}
+
+.remember-box input{
+    margin-right:6px;
+}
+.login-btn{
+    position:relative;
+    overflow:hidden;
+}
+
+.login-btn.loading{
+    pointer-events:none;
+    opacity:0.8;
+    transform:scale(0.97);
+}
+
+.login-btn::after{
+    content:'';
+    position:absolute;
+    width:30px;
+    height:300%;
+    background:rgba(255,255,255,0.3);
+    top:-100%;
+    left:-120%;
+    transform:rotate(25deg);
+    transition:0.7s;
+}
+
+.login-btn:hover::after{
+    left:130%;
+}
 
     </style>
     </head>
@@ -425,11 +535,33 @@
             <div class="input-box">
                 <i class="fa-solid fa-lock"></i>
                 <input type="password" id="password" placeholder="Password">
+
+                <i class="fa-solid fa-eye"
+                onclick="togglePassword()"
+                id="eyeIcon"
+                style="
+                position:absolute;
+                right:15px;
+                top:50%;
+                transform:translateY(-50%);
+                cursor:pointer;
+                ">
+                </i>
             </div>
 
         
 
-            <button class="login-btn" type="submit">Login</button>
+            <button class="login-btn" type="submit" id="loginBtn">
+            <span id="btnText">Login</span>
+            </button>
+            <div class="remember-box">
+
+            <label>
+            <input type="checkbox" id="rememberMe">
+             Remember Me
+            </label>
+
+            </div>
 
         </form>
     </div>
@@ -575,6 +707,11 @@ window.onload = function() {
 
     /* LOGIN SYSTEM */
     function login(event){
+        let btn = document.getElementById("loginBtn");
+        let text = document.getElementById("btnText");
+
+        btn.classList.add("loading");
+        text.innerText = "Checking...";
         event.preventDefault();
 
         let u = document.getElementById("username").value;
@@ -588,6 +725,7 @@ window.onload = function() {
         };
 
         if(users[u] && users[u].password === p){
+            text.innerText = "Success ✓";
 
             sessionStorage.setItem("currentUser", u);
 
@@ -608,7 +746,15 @@ window.onload = function() {
             document.getElementById("classSelect").disabled = true;
 
         }else{
-            alert("Wrong Username or Password");
+
+            text.innerText = "Wrong Password";
+
+            setTimeout(()=>{
+            text.innerText = "Login";
+            btn.classList.remove("loading");
+        }   ,1500);
+
+           alert("Wrong Username or Password");
         }
     }
 
@@ -1066,6 +1212,26 @@ function exportToExcel(){
     a.download = today + ".xls";
 
     a.click();
+}
+function togglePassword(){
+
+    let pass = document.getElementById("password");
+    let eye = document.getElementById("eyeIcon");
+
+    if(pass.type === "password"){
+
+        pass.type = "text";
+
+        eye.classList.remove("fa-eye");
+        eye.classList.add("fa-eye-slash");
+
+    }else{
+
+        pass.type = "password";
+
+        eye.classList.remove("fa-eye-slash");
+        eye.classList.add("fa-eye");
+    }
 }
       
 
